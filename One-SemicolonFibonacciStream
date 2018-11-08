@@ -1,0 +1,17 @@
+public class Fibonacci {
+
+  public static java.util.stream.IntStream stream(int a, int b) {
+                  //use the prefix without import because the problem checks for one semicolon, unfortunately import uses one
+    //This kata was from : https://www.codewars.com/kata/one-semicolon-fibonacci-stream/train/java
+    //Made by: Caleb Hu
+    return java.util.stream.Stream.iterate(new int[]{a,b}, 
+                  //create an array of a and b
+    i             //that is called i
+    ->            //Stream symbol for gets or =. Not too sure what else this is used for
+    new int[]{i[1],i[0]+i[1]}) 
+                  //and create another array that has the elements i[1] and i[1] and i[0] + i[1], which gets mapped to i
+    .mapToInt(i->i[0]); 
+                  //and add i[0] to the Stream. We include i[0] because the test cases want 0 in the sequence
+  }
+
+}
