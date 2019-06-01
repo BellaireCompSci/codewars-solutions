@@ -1,0 +1,132 @@
+//uses bfs, read more on Khan Academy
+
+import java.util.*;
+import java.io.*;
+public class IceMaze {
+  public static String solve(String map) {
+    String[] f = map.split("\n");
+    int c = f.length;
+    Character[][] grid = new Character[f.length][f[0].length()];
+    trair[][] bfs = new trair[f.length][f[0].length()];
+    int sx=0,sy=0;
+    int ex=0,ey=0;
+    for(int i=0;i<f.length;i++){
+      for(int j=0;j<f[i].length();j++){
+        grid[i][j]=f[i].charAt(j);
+        if(f[i].charAt(j)=='S'){
+          sx=i;sy=j;//start
+        }
+        if(f[i].charAt(j)=='E'){
+          ex=i;ey=j;//end
+        }
+      }
+    }
+    trair start = new trair(' ',0,null,0);
+    bfs[sx][sy]=start;
+    Queue<int[]> bg = new LinkedList<int[]>();//queue of coordinates to check
+    bg.add(new int[]{sx,sy});
+    trair prec = start;
+    while(!bg.isEmpty()){
+      int[] index = bg.poll();
+      int x = index[0];
+      int y = index[1];
+      trair curr=bfs[x][y];
+      if(x==ex&&y==ey) continue;//not sure if I need this
+      //next step is to enque all the points that we could possibly go to next
+      int[] left = findLeft(grid,x,y);
+      if((left[0]!=x||left[1]!=y)&&compair(bfs[left[0]][left[1]],curr.numstep+1,curr.dist+Math.abs(x-left[0]))){
+        bg.add(left);
+        bfs[left[0]][left[1]] = new trair('u',curr.numstep+1,curr,curr.dist+Math.abs(x-left[0]));
+        System.out.println(left[0]*c+left[1]+" "+left[0]+" "+left[1]);//debugging purposes
+      }
+      int[] right = findRight(grid,x,y);
+      if((right[0]!=x||right[1]!=y)&&compair(bfs[right[0]][right[1]],curr.numstep+1,curr.dist+Math.abs(x-left[0]))){
+        bg.add(right);
+        bfs[right[0]][right[1]] = new trair('d',curr.numstep+1,curr,curr.dist+Math.abs(x-right[0]));
+        System.out.println(right[0]*c+right[1]+" "+right[0]+" "+right[1]);
+      }
+      int[] up = findUp(grid,x,y);
+      if((up[0]!=x||up[1]!=y)&&compair(bfs[up[0]][up[1]],curr.numstep+1,curr.dist+Math.abs(x-left[0]))){
+        bg.add(up);
+        bfs[up[0]][up[1]] = new trair('l',curr.numstep+1,curr,curr.dist+Math.abs(y-up[1]));
+        System.out.println(up[0]*c+up[1]+" "+up[0]+" "+up[1]);
+      }
+      int[] down = findDown(grid,x,y);
+      if((down[0]!=x||down[1]!=y)&&compair(bfs[down[0]][down[1]],curr.numstep+1,curr.dist+Math.abs(x-left[0]))){
+        bg.add(down);
+        bfs[down[0]][down[1]] = new trair('r',curr.numstep+1,curr,curr.dist+Math.abs(y-down[1]));
+        System.out.println(down[0]*c+down[1]+" "+down[0]+" "+down[1]);
+      }
+    }
+      trair tem = bfs[ex][ey];
+      String out="";
+      if(bfs[ex][ey]==null)return null;
+      else{
+        while(tem!=null){//traverse through the steps that got us to there
+          out=tem.direc+out;
+          tem = tem.prev;
+        }
+      }
+      System.out.println(bfs[ex][ey].dist);
+      return out.trim();//remove the last space
+    
+  }
+  static class trair{//really should be quadair, got lazy
+    char direc;
+    int numstep;
+    trair prev;
+    int dist;
+    public trair( char direc, int numstep, trair prev,int dist){
+      this.direc=direc;
+      this.numstep=numstep;
+      this.prev=prev;
+      this.dist=dist;
+    }
+  }
+  public static boolean compair(trair n,int nu,int dis){
+      if(n==null)return true;
+      if(n.numstep-nu==0) return n.dist-dis>0;
+      return n.numstep-nu>0;
+  }
+  public static int[] findLeft(Character[][] arr, int x, int y){//actually this finds the one most down because x is vertical, same for the rest of the finds.
+    x--;                                                        //in essence it keeps going down until it either hits x # e or the end
+    while(get(x,y,arr)!=null&&get(x,y,arr)==' '){
+      x--;
+    }
+    if(get(x,y,arr)==null||get(x,y,arr)=='#') x++;
+    if(get(x,y,arr)==null) System.out.println(x+" "+y);
+    return new int[]{x,y};
+  }
+  public static int[] findRight(Character[][] arr, int x, int y){
+    x++;
+    while(get(x,y,arr)!=null&&get(x,y,arr)==' '){
+      x++;
+    }
+    if(get(x,y,arr)==null||get(x,y,arr)=='#') x--;
+    if(get(x,y,arr)==null) System.out.println(x+" "+y);
+    return new int[]{x,y};
+  }
+  public static int[] findDown(Character[][] arr, int x, int y){
+    y++;
+    while(get(x,y,arr)!=null&&get(x,y,arr)==' '){
+      y++;
+    }
+    if(get(x,y,arr)==null||get(x,y,arr)=='#') y--;
+    if(get(x,y,arr)==null) System.out.println(x+" "+y);
+    return new int[]{x,y};
+  }
+  public static int[] findUp(Character[][] arr, int x, int y){
+    y--;
+    while(get(x,y,arr)!=null&&get(x,y,arr)==' '){
+      y--;
+    }
+    if(get(x,y,arr)==null||get(x,y,arr)=='#') y++;
+    if(get(x,y,arr)==null) System.out.println(x+" "+y);
+    return new int[]{x,y};
+  }
+	public static Character get (int x, int y, Character[][] map){
+		if(x<0||x>map.length-1||y<0||y>map[0].length-1)return null;
+		else return map[x][y];
+	}
+
+}
